@@ -1,12 +1,13 @@
 #include "list_ops.h"
 
+static list_t *returnList = NULL;
+
 list_t *new_list(size_t length, list_element_t elements[]){
-  list_t *list = malloc(sizeof (list_t) + (sizeof (list_element_t) * length));
-  list->length = length;
-  for(size_t i = 0; i < length; i++) {
-    list->elements[i] = elements[i];
-  }
-  return list;
+  returnList = malloc(sizeof (list_t) + (sizeof (list_element_t) * length));
+  returnList->length = length;
+  if(!(elements == NULL))
+    memcpy(returnList->elements, elements, sizeof (list_element_t) * length);
+  return returnList;
 }
 
 void delete_list(list_t *list) {
@@ -15,34 +16,27 @@ void delete_list(list_t *list) {
 
 list_t *append_list(list_t *list1, list_t *list2) {
   int total_length = list1->length + list2->length;
-  list_t *list =
-      malloc(sizeof(list_t) + (sizeof(list_element_t) * total_length));
-  list->length = total_length;
-  for(size_t i = 0; i < list1->length; i++){
-    list->elements[i] = list1->elements[i];
-  }
-  for(int i = list1->length; i < total_length; i++){
-    list->elements[i] = list2->elements[i - list1->length];
-  }
-  return list;
+  returnList = new_list(total_length, NULL);
+  returnList->length = total_length;
+  memcpy(returnList->elements, list1->elements,
+         sizeof (list_element_t) * list1->length);
+  memcpy(returnList->elements + list1->length, list2->elements,
+         sizeof (list_element_t) * list2->length);
+  return returnList;
 }
 
 list_t *filter_list(list_t *list, bool (*filter)(list_element_t)) {
-  list_t *filteredList =
-    malloc(sizeof (list_t) + (sizeof(list_element_t) * list->length));
-  int count = 0;
-  filteredList->length = 0;
+  returnList = new_list(list->length, NULL);
+  returnList->length = 0;
   for(size_t i = 0; i < list->length; i++) {
     if((*filter)(list->elements[i])) {
-      filteredList->length++;
-      filteredList->elements[count] = list->elements[i];
-      count++;
+      returnList->elements[returnList->length++] = list->elements[i];
     }
   }
-  filteredList =
-    realloc(filteredList, (sizeof (list_t) +
-    (sizeof(list_element_t) * filteredList->length)));
-  return filteredList;
+  returnList =
+    realloc(returnList, (sizeof (list_t) +
+           (sizeof(list_element_t) * returnList->length)));
+  return returnList;
 }
 
 size_t length_list(list_t *list) {
@@ -50,13 +44,12 @@ size_t length_list(list_t *list) {
 }
 
 list_t *map_list(list_t *list, list_element_t (*map)(list_element_t)) {
-  list_t *mapList =
-    malloc(sizeof (list_t) + (sizeof (list_element_t) * list->length));
-  mapList->length = list->length;
+  returnList = new_list(list->length, list->elements);
+  returnList->length = list->length;
   for(size_t i = 0; i < list->length; i++) {
-    mapList->elements[i] = (*map)(list->elements[i]);
+    returnList->elements[i] = (*map)(list->elements[i]);
   }
-  return mapList;
+  return returnList;
 }
 
 list_element_t foldl_list(list_t *list, list_element_t initial,
@@ -78,12 +71,10 @@ list_element_t foldr_list(list_t *list, list_element_t initial,
 }
 
 list_t *reverse_list(list_t *list) {
-  list_t *revList =
-    malloc(sizeof (list_t) + (sizeof (list_element_t) * list->length));
-  revList->length = 0;
+  returnList = new_list(list->length, NULL);
+  returnList->length = 0;
   for(size_t i = list->length; i > 0; i--){
-    revList->elements[revList->length] = list->elements[i - 1];
-    revList->length++;
+    returnList->elements[returnList->length++] = list->elements[i - 1];
   }
-  return revList;
+  return returnList;
 }
