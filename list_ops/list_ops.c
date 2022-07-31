@@ -1,98 +1,81 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
+#include "list_ops.h"
 
-void encrypt(char key[][8], char word[], char arr2[]){
-  int wordLen = strlen(word);
-  int idx = 0, row1, col1, row2, col2;
-  row1 = col1 = row2 = col2 = 8;
-
-  while (idx < (wordLen - 1)){
-    for (int i = 0; i < 8; i++){
-      for (int j = 0; j < 8; j++){
-        if (word[idx] == key[i][j]){
-          row1 = i;
-          col1 = j;
-        }
-        if (word[idx + 1] == key[i][j]){
-          row2 = i;
-          col2 = j;
-        }
-      }
-    }
-    if (row1 == 8    ||
-       col1 == 8    ||
-       row2 == 8    ||
-       col2 == 8    ||
-       row1 == row2 ||
-       col1 == col2 ){
-         arr2[idx] = word[idx + 1];
-         arr2[idx + 1] = word[idx];
-    } else {
-         arr2[idx]     = key[row1][col2];
-         arr2[idx + 1] = key[row2][col1];
-    }
-    idx += 2;
-    row1 = col1 = row2 = col2 = 8;
+list_t *new_list(size_t length, list_element_t elements[]) {
+  list_t *returnList = malloc(sizeof *returnList + (sizeof *elements * length));
+  if (!returnList) {
+    perror("Error: Failed to allocate memory");
+    exit(EXIT_FAILURE);
   }
-  (wordLen % 2) ? (arr2[wordLen-1] = word[wordLen -1]) : (arr2[wordLen] = '\0');
-  arr2[wordLen] = '\0';
+  returnList->length = length;
+  if (elements != NULL) {
+    memcpy(returnList->elements, elements, sizeof *elements * length);
+  }
+  return returnList;
 }
 
-int found(char m[][8], char val){
-  for (int r = 0; r < 8; r++){
-    for (int c = 0; c < 8; c++){
-      if (m[r][c] == val)
-      return 1;
-    }
-  }
-return 0;
+void delete_list(list_t *list) {
+  free(list);
 }
 
-void generate_key(char key[][8]){
-  int i, k = 0;
-  char temp[64] = { ' ' };
-  temp[k++] = ' ';
-  temp[k++] = '.';
-
-  for (i = 0; i < 10; i++, k++)
-    temp[k] = '0' + i;
-  for (i = 0; i < 26; i++, k++)
-    temp[k] = 'A' + i;
-  for (i = 0; i < 26; i++, k++)
-    temp[k] = 'a' + i;
-  for (int r = 0; r < 8; r++){
-    for (int c = 0; c < 8; c++){
-      i = rand() % 64;
-      while (found(key, temp[i]) == 1){
-        i = rand() % 64;
-      }
-      key[r][c] = temp[i];
-    }
-  }
+list_t *append_list(list_t *list1, list_t *list2) {
+  int total_length = list1->length + list2->length;
+  list_t *returnList = new_list(total_length, NULL);
+  memcpy(returnList->elements, list1->elements,
+         sizeof *returnList->elements * list1->length);
+  memcpy(returnList->elements + list1->length, list2->elements,
+         sizeof *returnList->elements * list2->length);
+  return returnList;
 }
 
-int main(){
-  char key[8][8];
-  char arr2[100];
-  char word[100];
-
-  generate_key(key);
-
-  printf("Enter The Word:\n");
-  scanf("%s",word);
-
-  encrypt(key,word,arr2);
-
-  printf("\nUSING THESE KEYS :\n\n");
-  for (int i = 0 ;i<8;i++){
-    for (int j = 0;j<8;j++){
-      printf("%c\t",key[i][j]);
+list_t *filter_list(list_t *list, bool (*filter)(list_element_t)) {
+  list_t *returnList = new_list(list->length, NULL);
+  returnList->length = 0;
+  for (size_t i = 0; i < list->length; i++) {
+    if (filter(list->elements[i])) {
+      returnList->elements[returnList->length++] = list->elements[i];
     }
-    printf("\n");
   }
+  list_t *returnListReduced =
+    realloc(returnList, (sizeof *returnList +
+           (sizeof *returnList->elements * returnList->length)));
+  return (!returnListReduced) ? returnList : returnListReduced;
+}
 
-  printf("The Encyption Of it : %s\n",arr2);
-  return 0 ;
+size_t length_list(list_t *list) {
+  return list->length;
+}
+
+list_t *map_list(list_t *list, list_element_t (*map)(list_element_t)) {
+  list_t *returnList = new_list(list->length, list->elements);
+  for (size_t i = 0; i < list->length; i++) {
+    returnList->elements[i] = map(list->elements[i]);
+  }
+  return returnList;
+}
+
+list_element_t foldl_list(list_t *list, list_element_t initial,
+                          list_element_t (*foldl)(list_element_t,
+                                                  list_element_t)) {
+  for (size_t i = 0; i < list->length; i++) {
+    initial = foldl(list->elements[i], initial);
+  }
+  return initial;
+}
+
+list_element_t foldr_list(list_t *list, list_element_t initial,
+                          list_element_t (*foldl)(list_element_t,
+                                                  list_element_t)) {
+  for (size_t i = list->length; i > 0; i--) {
+    initial = foldl(list->elements[i - 1], initial);
+  }
+  return initial;
+}
+
+list_t *reverse_list(list_t *list) {
+  list_t *returnList = new_list(list->length, NULL);
+  returnList->length = 0;
+  for (size_t i = list->length; i > 0; i--) {
+    returnList->elements[returnList->length++] = list->elements[i - 1];
+  }
+  return returnList;
 }
