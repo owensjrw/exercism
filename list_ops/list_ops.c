@@ -63,10 +63,10 @@ list_element_t foldl_list(list_t *list, list_element_t initial,
 }
 
 list_element_t foldr_list(list_t *list, list_element_t initial,
-                          list_element_t (*foldl)(list_element_t,
+                          list_element_t (*foldr)(list_element_t,
                                                   list_element_t)) {
   for (size_t i = list->length; i > 0; i--) {
-    initial = foldl(list->elements[i - 1], initial);
+    initial = foldr(list->elements[i - 1], initial);
   }
   return initial;
 }
