@@ -36,7 +36,7 @@ void list_push(struct list *list, ll_data_t item_data) {
       list->first = node;   list->last = node;
     } else {
       node->prev = list->last;  node->next = NULL;
-      list->first->next = node; list->last = node;
+      list->last->next = node; list->last = node;
     }
 
   list->count += 1;
@@ -73,7 +73,7 @@ void list_unshift(struct list *list, ll_data_t item_data) {
       list->first = node;   list->last = node;
     } else {
       node->next = list->first;   node->prev = NULL;
-      list->last->prev = node;   list->first = node;
+      list->first->prev = node;   list->first = node;
     }
 
   list->count += 1;
