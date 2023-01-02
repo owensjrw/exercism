@@ -100,12 +100,31 @@ ll_data_t list_shift(struct list *list) {
 
 // deletes a node that holds the matching data
 void list_delete(struct list *list, ll_data_t data) {
-  FOREACH(list, first, next, node) {
-    if (node->data == data) {
-      list->count--;
-      break;
-    }
+
+  if (list->first == NULL) {
+    fprintf(stderr, "List is empty.");
   }
+  struct list_node *node = list->first;
+  do {
+        if (node->data == data) {
+          if (node->prev == node->next) {
+              list->first = NULL;   list->last = NULL;
+            } else if (list->first == node) {
+              list->first = node->next;
+              list->first->prev = NULL;
+            } else if (list->last == node) {
+              list->last = node->prev;
+              list->last->next = NULL;
+            } else {
+              node->prev->next = node->next->prev;
+              node->next->prev = node->prev->next;
+            }
+        list->count -= 1;
+        free(node);
+        break;
+        }
+      node = node->next;
+  } while (node);
 }
 
 // destroys an entire list
