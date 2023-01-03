@@ -116,12 +116,12 @@ void list_delete(struct list *list, ll_data_t data) {
               list->last = node->prev;
               list->last->next = NULL;
             } else {
-              node->prev->next = node->next->prev;
-              node->next->prev = node->prev->next;
+              node->prev->next = node->next;
+              node->next->prev = node->prev;
             }
-        list->count -= 1;
-        free(node);
-        break;
+          list->count -= 1;
+          free(node);
+          break;
         }
       node = node->next;
   } while (node);
