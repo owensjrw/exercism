@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <stddef.h>
 
 struct list_node {
   struct list_node *prev, *next;
