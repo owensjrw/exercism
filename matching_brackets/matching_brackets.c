@@ -4,6 +4,7 @@ linklist_t *createLinkedList(void);
 void pushchar(char c, linklist_t *list);
 void popit(linklist_t *list);
 bool popchar(char c, linklist_t *list);
+void freelist(linklist_t *list);
 
 linklist_t *createLinkedList(void) {
   linklist_t *list = malloc(sizeof(*list));
@@ -32,7 +33,7 @@ bool popchar(char c, linklist_t *list) {
   if(list->count == 0){
     return false;
   }
-  switch(c){
+  switch(c) {
     case ')':
       if(list->node->c == '(') {
         popit(list);
@@ -55,6 +56,13 @@ bool popchar(char c, linklist_t *list) {
   return false;
 }
 
+void freelist(linklist_t *list) {
+  while(list->count) {
+    popit(list);
+  }
+  free(list);
+}
+
 bool is_paired(const char *input) {
   linklist_t *list = createLinkedList();
   for(int i = 0; i < (int)strlen(input); i++) {
@@ -62,13 +70,13 @@ bool is_paired(const char *input) {
       pushchar(input[i], list);
     }
     if(input[i] == ')' || input[i] == ']' || input[i] == '}') {
-      if(popchar(input[i], list) == false) return false;
+      if(popchar(input[i], list) == false) {
+        freelist(list);
+        return false;
+      }
     }
   }
   bool rtn = !(list->count);
-  while(list->count) {
-    popit(list);
-  }
-  free(list);
+  freelist(list);
   return rtn;
 }
